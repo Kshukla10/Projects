@@ -1,0 +1,34 @@
+
+  module testbench;
+      reg [3:0] A, B;
+      reg sub;
+      wire [3:0] S;
+      wire Cout;
+
+      // Instantiate 4-bit RCA/RCS
+      four_bit_RCA_RCS uut (A, B, sub, S, Cout);
+ 
+      initial begin
+          $dumpfile("testbench.vcd");
+          $dumpvars(0, testbench);
+
+          // Addition Tests (sub = 0)
+          sub = 0;
+          A = 4'b0001; B = 4'b0010; #10; // 1 + 2
+          A = 4'b0101; B = 4'b0011; #10; // 5 + 3
+          A = 4'b1111; B = 4'b0001; #10; // 15 + 1 (carry case)
+
+          // Subtraction Tests (sub = 1)
+          sub = 1;
+          A = 4'b0100; B = 4'b0010; #10; // 4 - 2
+          A = 4'b0110; B = 4'b0101; #10; // 6 - 5
+          A = 4'b0011; B = 4'b1010; #10; // 3 - 10 (negative case)
+
+          $finish;
+      end
+  
+      initial begin
+          $monitor("Time=%0t | A=%b B=%b sub=%b | S=%b Cout=%b", 
+                   $time, A, B, sub, S, Cout);
+      end
+  endmodule
