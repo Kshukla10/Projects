@@ -1,0 +1,51 @@
+// Testbench for 32-bit Carry Lookahead Adder (CLA)
+
+module testbench;
+  
+  // Declare testbench variables
+  reg [31:0] A, B;
+  reg Cin;
+  wire [31:0] S;
+  wire Cout;
+
+  // Instantiate the 32-bit CLA module
+  CLA uut (A, B, Cin, S, Cout);
+
+  initial begin
+      $dumpfile("testbench.vcd");
+      $dumpvars(0, testbench);
+  end
+
+  // Test cases for the CLA
+  initial begin
+      Cin = 0;  
+
+      // Simple addition test cases
+      A = 32'h00000001; B = 32'h00000002; #10; // 1 + 2 = 3
+      A = 32'h00000005; B = 32'h00000003; #10; // 5 + 3 = 8
+
+    
+      // Carry generation test cases
+      A = 32'hFFFFFFFF; B = 32'h00000001; #10; // Carry generated
+      A = 32'h7FFFFFFF; B = 32'h00000001; #10; // Carry at MSB
+
+    
+      // Addition test cases for large numbers
+      A = 32'h12345678; B = 32'h87654321; #10; 
+      A = 32'hABCDEF01; B = 32'h12345678; #10; 
+
+    
+      // Carry propagation test cases
+      A = 32'hF0F0F0F0; B = 32'h0F0F0F0F; #10; 
+      A = 32'hAAAAAAAA; B = 32'h55555555; #10; 
+
+      $finish; 
+  end
+
+  // Monitor changes and print results
+  initial begin
+      $monitor("Time=%0t | A=%h B=%h Cin=%b | S=%h Cout=%b", 
+               $time, A, B, Cin, S, Cout);
+  end
+
+endmodule
