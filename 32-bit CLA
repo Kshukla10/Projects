@@ -1,0 +1,79 @@
+
+module CLA(A, B, Cin, S, Cout);
+    input [31:0] A, B;
+    input Cin;
+    output [31:0] S;
+    output Cout;
+
+    wire [7:0] Propagate, Generate;  // Propagate and Generate
+  
+    wire [8:0] Carry;                // Carry
+
+    assign Carry[0] = Cin;
+
+    // Carry Lookahead Logic using only 2-input AND and OR gates
+assign Carry[1] = Generate[0] | (Propagate[0] & Carry[0]);
+assign Carry[2] = Generate[1] | (Propagate[1] & Carry[1]);
+assign Carry[3] = Generate[2] | (Propagate[2] & Carry[2]);
+assign Carry[4] = Generate[3] | (Propagate[3] & Carry[3]);
+assign Carry[5] = Generate[4] | (Propagate[4] & Carry[4]);
+assign Carry[6] = Generate[5] | (Propagate[5] & Carry[5]);
+assign Carry[7] = Generate[6] | (Propagate[6] & Carry[6]);
+assign Carry[8] = Generate[7] | (Propagate[7] & Carry[7]);
+
+    // Instantiate eight 4-bit RCAs
+    four_bit_RCA rca0 (A[3:0],   B[3:0],   Carry[0], S[3:0],   Propagate[0], Generate[0]);
+  
+    four_bit_RCA rca1 (A[7:4],   B[7:4],   Carry[1], S[7:4],   Propagate[1], Generate[1]);
+  
+    four_bit_RCA rca2 (A[11:8],  B[11:8],  Carry[2], S[11:8],  Propagate[2], Generate[2]);
+  
+    four_bit_RCA rca3 (A[15:12], B[15:12], Carry[3], S[15:12], Propagate[3], Generate[3]);
+  
+    four_bit_RCA rca4 (A[19:16], B[19:16], Carry[4], S[19:16], Propagate[4], Generate[4]);
+  
+    four_bit_RCA rca5 (A[23:20], B[23:20], Carry[5], S[23:20], Propagate[5], Generate[5]);
+  
+    four_bit_RCA rca6 (A[27:24], B[27:24], Carry[6], S[27:24], Propagate[6], Generate[6]);
+  
+    four_bit_RCA rca7 (A[31:28], B[31:28], Carry[7], S[31:28], Propagate[7], Generate[7]);
+
+    assign Cout = Carry[8];
+
+endmodule
+
+// 4-bit RCA with Generate and Propagate logic
+
+module four_bit_RCA(A, B, Cin, S, P, G);
+    input [3:0] A, B;
+    input Cin;
+    output [3:0] S;
+    output P, G;
+
+    wire C1, C2, C3, Cout;
+    wire [3:0] P_i, G_i;
+
+    // Using four 1-bit full adders
+    one_bit_full_adder FA0(A[0], B[0], Cin, S[0], C1);
+    one_bit_full_adder FA1(A[1], B[1], C1, S[1], C2);
+    one_bit_full_adder FA2(A[2], B[2], C2, S[2], C3);
+    one_bit_full_adder FA3(A[3], B[3], C3, S[3], Cout);
+
+    assign P_i = A ^ B;  // Propagate
+    assign G_i = A & B;  // Generate
+
+  assign P = P_i[3] & P_i[2] & P_i[1] & P_i[0]; // Block Propagate
+
+    assign G = G_i[3] | (P_i[3] & G_i[2]) | (P_i[3] & P_i[2] & G_i[1]) | (P_i[3] & P_i[2] & P_i[1] & G_i[0]);
+
+endmodule
+
+// One-bit Full Adder
+module one_bit_full_adder(A, B, Cin, S, Cout);
+    input A, B, Cin;
+    output S, Cout;
+
+    assign S = A ^ B ^ Cin;
+    assign Cout = (A & B) | (B & Cin) | (Cin & A);
+
+endmodule
